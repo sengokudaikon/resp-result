@@ -1,10 +1,12 @@
 mod resp;
 mod status_signed;
 
-pub use self::resp::RespConfig;
-pub use self::serde::SerdeConfig;
-pub use self::status_signed::{SignType, StatusSign};
 use self::{resp::InnerRespConfig, serde::InnerSerdeConfig};
+pub use self::{
+    resp::RespConfig,
+    serde::SerdeConfig,
+    status_signed::{SignType, StatusSign},
+};
 
 mod serde;
 
@@ -24,9 +26,7 @@ pub(crate) struct InnerConfig {
 }
 
 impl Default for InnerConfig {
-    fn default() -> Self {
-        Self::from_cfg(&DefaultConfig)
-    }
+    fn default() -> Self { Self::from_cfg(&DefaultConfig) }
 }
 
 impl InnerConfig {

@@ -1,13 +1,12 @@
-#[allow(unused_imports)]
-use http::header::HeaderName;
-#[allow(unused_imports)]
-use std::borrow::Cow;
+#[allow(unused_imports)] use std::borrow::Cow;
 
-#[allow(unused_imports)]
-use crate::owner_leak::OwnerLeaker;
+#[allow(unused_imports)] use http::header::HeaderName;
+
+#[allow(unused_imports)] use crate::owner_leak::OwnerLeaker;
 /// the config of response
 pub trait RespConfig {
-    /// wether write the extra error message into header with the  provided name
+    /// wether write the extra error message into header with the  provided
+    /// name
     /// - `Some(_)` enable
     /// - `None` disable
     ///
@@ -29,7 +28,10 @@ impl InnerRespConfig {
     pub fn into_inner<C: RespConfig>(cfg: &C) -> Self {
         Self {
             #[cfg(feature = "extra-error")]
-            extra_code: cfg.head_extra_code().leak().map(HeaderName::from_static),
+            extra_code: cfg
+                .head_extra_code()
+                .leak()
+                .map(HeaderName::from_static),
         }
     }
 }

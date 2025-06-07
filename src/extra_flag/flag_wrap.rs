@@ -1,9 +1,8 @@
+use super::effect::{BodyEffect, Effects};
 use crate::{
     resp_body::{LoadSerde, RespBody},
     ExtraFlags, RespResult,
 };
-
-use super::effect::{BodyEffect, Effects};
 
 /// an wrap for adding extra flags.
 /// the [`FlagWrap`] if and only if using like following
@@ -29,32 +28,35 @@ impl<T> FlagWrap<T> {
 impl<T, E> RespResult<T, E> {
     #[inline]
     /// create a [`RespResult::Success`] with flags
-    pub fn flag_ok(data: T, flags: impl Into<ExtraFlags>) -> RespResult<FlagWrap<T>, E> {
+    pub fn flag_ok(
+        data: T, flags: impl Into<ExtraFlags>,
+    ) -> RespResult<FlagWrap<T>, E> {
         RespResult::ok(FlagWrap::new(data, flags))
     }
 
     #[inline]
-    /// covert a [`RespResult::<T, E>`] into [`RespResult<FlagWrap<T>, E>`] with provide flags
-    pub fn with_flags(self, flags: impl Into<ExtraFlags>) -> RespResult<FlagWrap<T>, E> {
+    /// covert a [`RespResult::<T, E>`] into [`RespResult<FlagWrap<T>, E>`]
+    /// with provide flags
+    pub fn with_flags(
+        self, flags: impl Into<ExtraFlags>,
+    ) -> RespResult<FlagWrap<T>, E> {
         match self {
-            RespResult::Success(data) => RespResult::Success(FlagWrap::new(data, flags)),
+            RespResult::Success(data) => {
+                RespResult::Success(FlagWrap::new(data, flags))
+            }
             RespResult::Err(err) => RespResult::Err(err),
         }
     }
 }
 
 impl<T, E> From<RespResult<T, E>> for RespResult<FlagWrap<T>, E> {
-    fn from(inner: RespResult<T, E>) -> Self {
-        inner.with_flags(())
-    }
+    fn from(inner: RespResult<T, E>) -> Self { inner.with_flags(()) }
 }
 
 impl<T: LoadSerde> LoadSerde for FlagWrap<T> {
     type SerdeData = T::SerdeData;
 
-    fn load_serde(&self) -> &Self::SerdeData {
-        self.inner.load_serde()
-    }
+    fn load_serde(&self) -> &Self::SerdeData { self.inner.load_serde() }
 }
 
 impl<T> Effects for FlagWrap<T> {
@@ -62,10 +64,12 @@ impl<T> Effects for FlagWrap<T> {
     fn body_effect(&self, body: &mut Vec<u8>) -> BodyEffect {
         self.flags.body_effect(body)
     }
+
     #[inline]
     fn status_effect(&self) -> Option<http::StatusCode> {
         self.flags.status_effect()
     }
+
     #[inline]
     fn headers_effect(&self, map: &mut http::HeaderMap) {
         self.flags.headers_effect(map)
@@ -78,21 +82,22 @@ impl<T: LoadSerde> RespBody for FlagWrap<T> {}
 mod test {
     use http::StatusCode;
 
-    use crate::{resp_result::serde::SerializeWrap, ExtraFlag, RespError, RespResult};
+    use crate::{
+        resp_result::serde::SerializeWrap, ExtraFlag, RespError, RespResult,
+    };
 
     struct MockErr;
 
     impl RespError for MockErr {
-        fn log_message(&self) -> std::borrow::Cow<'_, str> {
-            "Mock Error".into()
-        }
         #[cfg(feature = "extra-error")]
         type ExtraMessage = String;
 
-        #[cfg(feature = "extra-error")]
-        fn extra_message(&self) -> Self::ExtraMessage {
-            "Mock".into()
+        fn log_message(&self) -> std::borrow::Cow<'_, str> {
+            "Mock Error".into()
         }
+
+        #[cfg(feature = "extra-error")]
+        fn extra_message(&self) -> Self::ExtraMessage { "Mock".into() }
     }
 
     #[test]

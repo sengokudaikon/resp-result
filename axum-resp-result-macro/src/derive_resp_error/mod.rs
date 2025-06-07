@@ -1,16 +1,19 @@
-use crate::derive_resp_error::codegen::RespErrorCodeGen;
-use crate::derive_resp_error::input::RespErrorDeriveInput;
 use darling::FromDeriveInput;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::spanned::Spanned;
-use syn::DeriveInput;
+use syn::{spanned::Spanned, DeriveInput};
+
+use crate::derive_resp_error::{
+    codegen::RespErrorCodeGen, input::RespErrorDeriveInput,
+};
 
 mod codegen;
 mod input;
 mod structure;
 
-pub fn gen_resp_error_derive(input: &DeriveInput) -> syn::Result<TokenStream> {
+pub fn gen_resp_error_derive(
+    input: &DeriveInput,
+) -> syn::Result<TokenStream> {
     if !input.generics.params.is_empty() {
         Err(syn::Error::new(
             input.generics.span(),

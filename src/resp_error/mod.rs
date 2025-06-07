@@ -7,11 +7,10 @@ pub trait RespError {
     /// message for response
     ///
     /// ## Default
-    /// the [`RespError::resp_message`] default is equal to [`RespError::log_message`]
+    /// the [`RespError::resp_message`] default is equal to
+    /// [`RespError::log_message`]
     #[inline]
-    fn resp_message(&self) -> Cow<'_, str> {
-        self.log_message()
-    }
+    fn resp_message(&self) -> Cow<'_, str> { self.log_message() }
 
     /// the http code of this error
     ///
@@ -35,9 +34,7 @@ pub trait RespError {
     ///
     /// default is [`None`](Option::None), it will serialize to `null`
     #[inline]
-    fn resp_message_default() -> Option<Cow<'static, str>> {
-        None
-    }
+    fn resp_message_default() -> Option<Cow<'static, str>> { None }
 
     /// when `fix-field = true` using this value serialize extra error message
     ///
@@ -46,7 +43,5 @@ pub trait RespError {
     /// default is [`None`], it will be serialized to `null`
     #[cfg(feature = "extra-error")]
     #[inline]
-    fn extra_message_default() -> Option<Self::ExtraMessage> {
-        None
-    }
+    fn extra_message_default() -> Option<Self::ExtraMessage> { None }
 }

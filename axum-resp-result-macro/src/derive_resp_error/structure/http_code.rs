@@ -2,8 +2,10 @@ use darling::FromMeta;
 use heck::ToShoutySnakeCase;
 use proc_macro2::Span;
 use quote::quote;
-use syn::parse::{Parse, ParseStream};
-use syn::{parse2, parse_str, Expr, Lit};
+use syn::{
+    parse::{Parse, ParseStream},
+    parse2, parse_str, Expr, Lit,
+};
 
 #[derive(Debug)]
 pub enum HttpCode {
@@ -51,19 +53,24 @@ impl TryInto<Expr> for HttpCode {
 
     fn try_into(self) -> Result<Expr, Self::Error> {
         match self {
-            HttpCode::Str(str, span) => parse_str(&format!(
-                "::axum_resp_result::StatusCode::{}",
-                str.to_shouty_snake_case()
-            ))
-            .map_err(|err| {
-                let mut er = syn::Error::new(span, "Parse StatusCode Error");
-                er.combine(err);
-                er
-            }),
+            HttpCode::Str(str, span) => {
+                parse_str(&format!(
+                    "::axum_resp_result::StatusCode::{}",
+                    str.to_shouty_snake_case()
+                ))
+                .map_err(|err| {
+                    let mut er =
+                        syn::Error::new(span, "Parse StatusCode Error");
+                    er.combine(err);
+                    er
+                })
+            }
             HttpCode::Num(code, span) => {
-                let _status =
-                    http::StatusCode::from_u16(code).map_err(|err| syn::Error::new(span, err))?;
-                parse2(quote!(::axum_resp_result::StatusCode::from_u16(#code).unwrap()))
+                let _status = http::StatusCode::from_u16(code)
+                    .map_err(|err| syn::Error::new(span, err))?;
+                parse2(
+                    quote!(::axum_resp_result::StatusCode::from_u16(#code).unwrap()),
+                )
             }
         }
     }

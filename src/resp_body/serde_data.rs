@@ -9,7 +9,5 @@ where
 {
     type SerdeData = Self;
 
-    fn load_serde(&self) -> &Self::SerdeData {
-        self
-    }
+    fn load_serde(&self) -> &Self::SerdeData { self }
 }

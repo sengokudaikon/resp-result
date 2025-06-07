@@ -1,11 +1,10 @@
 use std::borrow::Cow;
 
-use crate::owner_leak::OwnerLeaker;
-
 use super::{
     status_signed::{InnerStatusSign, SignType},
     StatusSign,
 };
+use crate::owner_leak::OwnerLeaker;
 
 static SIGNED_STATUS: StatusSign = StatusSign {
     field_name: Cow::Borrowed("is-ok"),
@@ -18,31 +17,26 @@ static BODY: &str = "body";
 
 /// the config information of serialize
 pub trait SerdeConfig {
-    /// the name of body field, the field will be available when the [`RespResult`](crate::RespResult)
-    /// is `Success(_)`
+    /// the name of body field, the field will be available when the
+    /// [`RespResult`](crate::RespResult) is `Success(_)`
     ///
     /// ## Default
     /// the default field name is `body`
-    fn body_name(&self) -> Cow<'static, str> {
-        BODY.into()
-    }
-    /// the name of error_message field, this field will be available when [`RespResult`](crate::RespResult)
-    /// is `Err(_)`
+    fn body_name(&self) -> Cow<'static, str> { BODY.into() }
+    /// the name of error_message field, this field will be available when
+    /// [`RespResult`](crate::RespResult) is `Err(_)`
     ///
     /// ## Default
     /// the default field name is `error-message`
-    fn err_msg_name(&self) -> Cow<'static, str> {
-        ERROR_MESSAGE.into()
-    }
+    fn err_msg_name(&self) -> Cow<'static, str> { ERROR_MESSAGE.into() }
 
     /// fixed field size,
-    /// - if return `true`, will also serialize not available field with `null`
+    /// - if return `true`, will also serialize not available field with
+    ///   `null`
     ///
     /// ## Default
     /// the default value is true
-    fn fixed_field(&self) -> bool {
-        true
-    }
+    fn fixed_field(&self) -> bool { true }
 
     /// sign the status of response
     /// - Some(_) **enable** this sign
@@ -58,7 +52,7 @@ pub trait SerdeConfig {
 
     /// extra error message
     /// - Some(_) **enable** extra error message
-    ///- None **disable** extra error message
+    /// - None **disable** extra error message
     /// extra-error
     ///
     /// ## Default
@@ -117,7 +111,7 @@ impl FieldSize {
             ok_size += 1;
             err_size += 1;
         }
-        //额外的异常码
+        // 额外的异常码
         #[cfg(feature = "extra-error")]
         if cfg.extra_code.is_some() {
             if cfg.full_field {

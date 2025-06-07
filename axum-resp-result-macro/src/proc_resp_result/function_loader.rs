@@ -1,7 +1,7 @@
 use quote::{format_ident, quote, ToTokens};
 use syn::{
-    parse::Parse, spanned::Spanned, Attribute, Block, ItemFn, Pat, PatIdent, ReturnType, Signature,
-    Visibility,
+    parse::Parse, spanned::Spanned, Attribute, Block, ItemFn, Pat, PatIdent,
+    ReturnType, Signature, Visibility,
 };
 
 pub struct Function {
@@ -30,7 +30,8 @@ impl ToTokens for Function {
 
         let ay = if *is_async {
             Some(quote!(.await))
-        } else {
+        }
+        else {
             None
         };
         let inner = quote!(#inner_sig #block);
@@ -92,9 +93,11 @@ impl Parse for Function {
         for (idx, ty) in outer_sig
             .inputs
             .iter_mut()
-            .map(|v| match v {
-                syn::FnArg::Typed(ty) => ty,
-                syn::FnArg::Receiver(_) => unreachable!(),
+            .map(|v| {
+                match v {
+                    syn::FnArg::Typed(ty) => ty,
+                    syn::FnArg::Receiver(_) => unreachable!(),
+                }
             })
             .enumerate()
         {

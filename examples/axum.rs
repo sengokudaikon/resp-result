@@ -1,19 +1,19 @@
+use std::net::SocketAddr;
+
 use axum::{body::Body, routing::get, Router};
+use axum_resp_result::{set_config, RespResult};
 use config::AxumConfig;
 use echo::echo_number;
 use error::PlainError;
 use http::Request;
-
-use axum_resp_result::{set_config, RespResult};
 use tokio::net::TcpListener;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, TraceLayer};
 use tracing::{metadata::LevelFilter, Level};
 use tracing_subscriber::{
-    fmt::format, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, EnvFilter,
+    fmt::format, prelude::__tracing_subscriber_SubscriberExt,
+    util::SubscriberInitExt, EnvFilter,
 };
 use want_304::want_304;
-
-use std::net::SocketAddr;
 
 use crate::rtry_router::{parse_to_i32, parse_to_i64};
 
@@ -93,38 +93,32 @@ mod error {
     }
 
     impl RespError for PlainError {
+        type ExtraMessage = u32;
+
         fn log_message(&self) -> Cow<'_, str> {
             format!("Plain Error Happened: {}", self.msg).into()
         }
 
-        fn http_code(&self) -> http::StatusCode {
-            StatusCode::BAD_REQUEST
-        }
+        fn http_code(&self) -> http::StatusCode { StatusCode::BAD_REQUEST }
 
-        type ExtraMessage = u32;
-
-        fn extra_message(&self) -> Self::ExtraMessage {
-            self.code
-        }
+        fn extra_message(&self) -> Self::ExtraMessage { self.code }
 
         fn resp_message_default() -> Option<Cow<'static, str>> {
             Some("Success".into())
         }
 
-        fn extra_message_default() -> Option<Self::ExtraMessage> {
-            Some(0)
-        }
+        fn extra_message_default() -> Option<Self::ExtraMessage> { Some(0) }
     }
 }
 
 type PlainRResult<T> = RespResult<T, PlainError>;
 
 mod echo {
-    use crate::error::PlainError;
     use axum::extract::Path;
-    use axum_resp_result::rresult;
-    use axum_resp_result::MapReject;
+    use axum_resp_result::{rresult, MapReject};
     use serde::Deserialize;
+
+    use crate::error::PlainError;
 
     #[derive(Debug, Deserialize)]
     pub(super) struct Input {
@@ -156,7 +150,8 @@ mod want_304 {
     ) -> PlainRResult<FlagWrap<&'static str>> {
         if !want {
             RespResult::flag_ok("Not a 304", ())
-        } else {
+        }
+        else {
             RespResult::ok("304").with_flags(
                 ExtraFlag::empty_body()
                     + ExtraFlag::status(StatusCode::NOT_MODIFIED)
@@ -172,7 +167,9 @@ mod rtry_router {
 
     use crate::{error::PlainError, PlainRResult};
 
-    pub(super) async fn parse_to_i32(Path(v): Path<String>) -> PlainRResult<i32> {
+    pub(super) async fn parse_to_i32(
+        Path(v): Path<String>,
+    ) -> PlainRResult<i32> {
         let v = rtry! {v.parse::<i32>()};
         RespResult::Success(v)
     }
@@ -194,7 +191,9 @@ async fn fallback(req: Request<Body>) -> PlainRResult<()> {
 mod config {
     use std::borrow::Cow;
 
-    use axum_resp_result::{ConfigTrait, RespConfig, SerdeConfig, SignType, StatusSign};
+    use axum_resp_result::{
+        ConfigTrait, RespConfig, SerdeConfig, SignType, StatusSign,
+    };
 
     pub(super) struct AxumConfig;
 
@@ -207,19 +206,13 @@ mod config {
             Some("reterror".into())
         }
 
-        fn fixed_field(&self) -> bool {
-            true
-        }
+        fn fixed_field(&self) -> bool { true }
 
-        fn err_msg_name(&self) -> Cow<'static, str> {
-            "message".into()
-        }
+        fn err_msg_name(&self) -> Cow<'static, str> { "message".into() }
     }
 
     impl RespConfig for AxumConfig {
-        fn head_extra_code(&self) -> Option<Cow<'static, str>> {
-            None
-        }
+        fn head_extra_code(&self) -> Option<Cow<'static, str>> { None }
     }
 
     impl ConfigTrait for AxumConfig {}

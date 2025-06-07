@@ -13,7 +13,8 @@ where
         use crate::expect_ext::ExpectExt;
 
         let respond = super::PrepareRespond::from_resp_result(&self);
-        let mut builder = axum::response::Response::builder().status(respond.status);
+        let mut builder =
+            axum::response::Response::builder().status(respond.status);
 
         builder
             .headers_mut()
@@ -34,19 +35,23 @@ pub mod axum_respond_part {
     pub mod prefab_part_handle {
         use crate::Nil;
 
-        pub fn no_part<T>(data: T) -> (T, Nil) {
-            (data, Nil)
-        }
+        pub fn no_part<T>(data: T) -> (T, Nil) { (data, Nil) }
 
-        pub fn no_resp<T>(data: T) -> ((), T) {
-            ((), data)
-        }
+        pub fn no_resp<T>(data: T) -> ((), T) { ((), data) }
     }
 
     #[inline]
-    pub async fn resp_result_with_respond_part<T, E, F, Fut, R, P, Resp, Part>(
-        handle: F,
-        part_handle: P,
+    pub async fn resp_result_with_respond_part<
+        T,
+        E,
+        F,
+        Fut,
+        R,
+        P,
+        Resp,
+        Part,
+    >(
+        handle: F, part_handle: P,
     ) -> RespResultExtraPart<Resp, E, Part>
     where
         // handles
@@ -74,8 +79,11 @@ pub mod axum_respond_part {
 
     impl IntoResponseParts for Nil {
         type Error = Infallible;
+
         #[inline]
-        fn into_response_parts(self, res: ResponseParts) -> Result<ResponseParts, Self::Error> {
+        fn into_response_parts(
+            self, res: ResponseParts,
+        ) -> Result<ResponseParts, Self::Error> {
             Ok(res)
         }
     }
@@ -136,9 +144,8 @@ pub mod axum_respond_part {
     mod test {
         use serde::Serialize;
 
-        use crate::RespError;
-
         use super::resp_result_with_respond_part;
+        use crate::RespError;
 
         #[derive(Debug)]
         struct MockError;
@@ -153,21 +160,28 @@ pub mod axum_respond_part {
         }
 
         impl RespError for MockError {
+            #[cfg(feature = "extra-error")]
+            type ExtraMessage = String;
+
             fn log_message(&self) -> std::borrow::Cow<'_, str> {
                 "Mock Error".into()
             }
+
             #[cfg(feature = "extra-error")]
-            type ExtraMessage = String;
-            #[cfg(feature = "extra-error")]
-            fn extra_message(&self) -> Self::ExtraMessage {
-                String::new()
-            }
+            fn extra_message(&self) -> Self::ExtraMessage { String::new() }
         }
 
         #[tokio::test]
         async fn test_wrap() {
             let resp = resp_result_with_respond_part(
-                || async { Result::<_, MockError>::Ok((12i32, [("auth_type", "12345")])) },
+                || {
+                    async {
+                        Result::<_, MockError>::Ok((
+                            12i32,
+                            [("auth_type", "12345")],
+                        ))
+                    }
+                },
                 |(body, part)| (body, part),
             )
             .await;

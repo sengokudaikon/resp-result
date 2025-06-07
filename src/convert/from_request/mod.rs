@@ -15,4 +15,6 @@ where
     type Payload = Self;
 }
 
-pub struct MapReject<T: FromRequestFamily<E>, E>(pub <T::Payload as ToInner>::Inner);
+pub struct MapReject<T: FromRequestFamily<E>, E>(
+    pub <T::Payload as ToInner>::Inner,
+);

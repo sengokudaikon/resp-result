@@ -2,22 +2,19 @@ use std::{
     convert::Infallible,
     ops::{ControlFlow, FromResidual, Try},
 };
-#[cfg(feature = "trace")]
-use tracing::{event, Level};
 
-use crate::RespError;
+#[cfg(feature = "trace")] use tracing::{event, Level};
 
 use super::RespResult;
+use crate::RespError;
 
 impl<T, E: RespError> Try for RespResult<T, E> {
     type Output = T;
-
     type Residual = RespResult<Infallible, E>;
 
     #[inline]
-    fn from_output(output: Self::Output) -> Self {
-        Self::Success(output)
-    }
+    fn from_output(output: Self::Output) -> Self { Self::Success(output) }
+
     #[inline]
     fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
         match self {
@@ -82,15 +79,11 @@ mod test {
     struct B;
 
     impl From<A> for MockA {
-        fn from(a: A) -> Self {
-            MockA::A(a)
-        }
+        fn from(a: A) -> Self { MockA::A(a) }
     }
 
     impl From<B> for MockA {
-        fn from(v: B) -> Self {
-            MockA::B(v)
-        }
+        fn from(v: B) -> Self { MockA::B(v) }
     }
 
     enum MockA {
@@ -98,16 +91,15 @@ mod test {
         B(B),
     }
     impl RespError for MockA {
+        #[cfg(feature = "extra-error")]
+        type ExtraMessage = String;
+
         fn log_message(&self) -> std::borrow::Cow<'static, str> {
             "MockA".into()
         }
 
         #[cfg(feature = "extra-error")]
-        type ExtraMessage = String;
-        #[cfg(feature = "extra-error")]
-        fn extra_message(&self) -> Self::ExtraMessage {
-            String::new()
-        }
+        fn extra_message(&self) -> Self::ExtraMessage { String::new() }
     }
 
     // test whether ? can work on Result

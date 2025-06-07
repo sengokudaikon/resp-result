@@ -20,9 +20,7 @@ where
 {
     type Leak = Option<T::Leak>;
 
-    fn leak(self) -> Self::Leak {
-        self.map(|e| e.leak())
-    }
+    fn leak(self) -> Self::Leak { self.map(|e| e.leak()) }
 }
 
 impl OwnerLeaker for Cow<'static, str> {

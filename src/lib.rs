@@ -11,11 +11,10 @@ mod resp_body;
 mod resp_error;
 mod resp_result;
 
-pub use self::resp_result::to_response::axum::axum_respond_part;
-use once_cell::sync::OnceCell;
-
 use config::InnerConfig;
-pub use config::{ConfigTrait, DefaultConfig, RespConfig, SerdeConfig, SignType, StatusSign};
+pub use config::{
+    ConfigTrait, DefaultConfig, RespConfig, SerdeConfig, SignType, StatusSign,
+};
 pub use convert::{
     from_request::{FromRequestFamily, MapReject, ToInner},
     resp_try, IntoRespResult, IntoRespResultWithErr,
@@ -24,14 +23,19 @@ pub use extra_flag::{
     flag_wrap::FlagWrap,
     flags::{ExtraFlag, ExtraFlags, HeaderType},
 };
+use once_cell::sync::OnceCell;
 pub use resp_error::RespError;
 pub use resp_result::{Nil, RespResult};
+
+pub use self::resp_result::to_response::axum::axum_respond_part;
 
 pub type FlagRespResult<T, E> = RespResult<FlagWrap<T>, E>;
 
 static RESP_RESULT_CONFIG: OnceCell<InnerConfig> = OnceCell::new();
 
-pub fn try_set_config<C: ConfigTrait>(cfg: &C) -> Result<(), SetRespResultConfigureError> {
+pub fn try_set_config<C: ConfigTrait>(
+    cfg: &C,
+) -> Result<(), SetRespResultConfigureError> {
     let inner = InnerConfig::from_cfg(cfg);
 
     #[cfg(feature = "trace")]
@@ -41,7 +45,8 @@ pub fn try_set_config<C: ConfigTrait>(cfg: &C) -> Result<(), SetRespResultConfig
         .map_err(|_| SetRespResultConfigureError)
 }
 
-/// set the [`RespResult`] config, will change the action on generate response body
+/// set the [`RespResult`] config, will change the action on generate response
+/// body
 ///
 /// ## Panic
 ///
@@ -75,8 +80,8 @@ pub(crate) fn get_config() -> &'static InnerConfig {
 #[error("RespResult Configure has set")]
 pub struct SetRespResultConfigureError;
 
-pub use axum_resp_result_macro::resp_result as rresult;
-pub use axum_resp_result_macro::resp_result;
-pub use axum_resp_result_macro::RespError;
+pub use axum_resp_result_macro::{
+    resp_result as rresult, resp_result, RespError,
+};
 pub use convert::Fallible;
 pub use http::StatusCode;

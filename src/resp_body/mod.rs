@@ -1,6 +1,5 @@
-use crate::extra_flag::effect::Effects;
-
 pub use self::serde_data::LoadSerde;
+use crate::extra_flag::effect::Effects;
 
 mod serde_data;
 pub trait RespBody: LoadSerde + Effects {}

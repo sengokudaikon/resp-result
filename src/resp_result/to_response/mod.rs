@@ -1,7 +1,9 @@
 pub mod axum;
 
-#[allow(unused_imports)]
-use std::str::FromStr;
+#[allow(unused_imports)] use std::str::FromStr;
+
+use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue, StatusCode};
+#[cfg(feature = "trace")] use tracing::{event, Level};
 
 use super::{serde::SerializeWrap, RespResult};
 use crate::{
@@ -11,9 +13,6 @@ use crate::{
     resp_body::RespBody,
     resp_error::RespError,
 };
-use http::{header::CONTENT_TYPE, HeaderMap, HeaderValue, StatusCode};
-#[cfg(feature = "trace")]
-use tracing::{event, Level};
 
 #[allow(dead_code)]
 static JSON_TYPE: &mime::Mime = &mime::APPLICATION_JSON;
@@ -55,7 +54,8 @@ impl PrepareRespond {
         event!(Level::DEBUG, prepare.state = "Set Headers");
         this.set_header(
             resp,
-            #[cfg(feature = "extra-error")] cfg.extra_code.as_ref(),
+            #[cfg(feature = "extra-error")]
+            cfg.extra_code.as_ref(),
         );
         #[cfg(feature = "trace")]
         event!(
@@ -79,16 +79,18 @@ impl PrepareRespond {
             event!(Level::DEBUG, body.body_effect = "Continue");
             serde_json::to_writer(&mut self.body, &SerializeWrap(resp))
                 .with_expect("Json 响应时序列化异常");
-        } else {
+        }
+        else {
             #[cfg(feature = "trace")]
             event!(Level::DEBUG, body.body_effect = "Empty");
         }
     }
 
     fn set_header<T, E>(
-        &mut self,
-        resp: &RespResult<T, E>,
-        #[cfg(feature = "extra-error")] extra_header: Option<&http::header::HeaderName>,
+        &mut self, resp: &RespResult<T, E>,
+        #[cfg(feature = "extra-error")] extra_header: Option<
+            &http::header::HeaderName,
+        >,
     ) where
         T: RespBody,
         E: RespError,
@@ -97,7 +99,8 @@ impl PrepareRespond {
         event!(Level::DEBUG, headers.content_type = %JSON_TYPE);
         self.headers.append(
             CONTENT_TYPE,
-            HeaderValue::try_from(JSON_TYPE.as_ref()).with_expect("Bad HeaderValue"),
+            HeaderValue::try_from(JSON_TYPE.as_ref())
+                .with_expect("Bad HeaderValue"),
         );
         // extra header
 
@@ -110,8 +113,10 @@ impl PrepareRespond {
                 (RespResult::Err(err), Some(key)) => {
                     self.headers.append(
                         key,
-                        HeaderValue::from_str(&err.extra_message().to_string())
-                            .with_expect("Bad HeaderValue"),
+                        HeaderValue::from_str(
+                            &err.extra_message().to_string(),
+                        )
+                        .with_expect("Bad HeaderValue"),
                     );
                 }
             }
@@ -151,15 +156,11 @@ impl PrepareRespond {
 pub struct Nil;
 
 impl From<()> for Nil {
-    fn from(_: ()) -> Self {
-        Self
-    }
+    fn from(_: ()) -> Self { Self }
 }
 
 impl From<std::convert::Infallible> for Nil {
-    fn from(_: std::convert::Infallible) -> Self {
-        Self
-    }
+    fn from(_: std::convert::Infallible) -> Self { Self }
 }
 
 impl std::fmt::Display for Nil {
@@ -172,21 +173,20 @@ impl std::fmt::Display for Nil {
 mod test {
     use http::StatusCode;
 
-    use crate::{ExtraFlag, RespError, RespResult};
-
     use super::PrepareRespond;
+    use crate::{ExtraFlag, RespError, RespResult};
     struct MockErr;
 
     impl RespError for MockErr {
+        #[cfg(feature = "extra-error")]
+        type ExtraMessage = String;
+
         fn log_message(&self) -> std::borrow::Cow<'_, str> {
             "Mock Error".into()
         }
+
         #[cfg(feature = "extra-error")]
-        type ExtraMessage = String;
-        #[cfg(feature = "extra-error")]
-        fn extra_message(&self) -> Self::ExtraMessage {
-            "Mock".into()
-        }
+        fn extra_message(&self) -> Self::ExtraMessage { "Mock".into() }
     }
     #[test]
     fn test_prepare_resp() {

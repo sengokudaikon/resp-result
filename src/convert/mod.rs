@@ -18,9 +18,7 @@ where
     E: RespError,
 {
     #[inline]
-    fn into_rresult(self) -> RespResult<T, E> {
-        RespResult::from(self)
-    }
+    fn into_rresult(self) -> RespResult<T, E> { RespResult::from(self) }
 }
 
 impl<E, T> IntoRespResult<T, E> for RespResult<T, E>
@@ -28,9 +26,7 @@ where
     E: RespError,
 {
     #[inline]
-    fn into_rresult(self) -> RespResult<T, E> {
-        self
-    }
+    fn into_rresult(self) -> RespResult<T, E> { self }
 }
 
 impl<T, E> IntoRespResultWithErr<T, E> for Option<T>
@@ -51,19 +47,15 @@ pub trait Fallible {
 }
 
 impl<T, R> Fallible for Result<T, R> {
+    type Failure = R;
     type Success = T;
 
-    type Failure = R;
-
-    fn to_result(self) -> Result<Self::Success, Self::Failure> {
-        self
-    }
+    fn to_result(self) -> Result<Self::Success, Self::Failure> { self }
 }
 
 impl<T, R> Fallible for RespResult<T, R> {
-    type Success = T;
-
     type Failure = R;
+    type Success = T;
 
     fn to_result(self) -> Result<<Self as Fallible>::Success, Self::Failure> {
         match self {
@@ -74,17 +66,15 @@ impl<T, R> Fallible for RespResult<T, R> {
 }
 
 impl Fallible for () {
+    type Failure = Infallible;
     type Success = ();
 
-    type Failure = Infallible;
-
-    fn to_result(self) -> Result<Self::Success, Self::Failure> {
-        Ok(self)
-    }
+    fn to_result(self) -> Result<Self::Success, Self::Failure> { Ok(self) }
 }
 
 #[inline]
-/// receive a [Future](core::future::Future) applying it immediately, then convent the result into [RespResult](crate::RespResult)
+/// receive a [Future](core::future::Future) applying it immediately, then
+/// convent the result into [RespResult](crate::RespResult)
 pub async fn resp_try<Fut, T, E>(future: Fut) -> RespResult<T, E>
 where
     Fut: Future,

@@ -1,9 +1,10 @@
 use http::{HeaderMap, StatusCode};
 use serde::Serialize;
 
-use crate::{resp_body::RespBody, ExtraFlag, ExtraFlags, RespError, RespResult};
-
 use super::flags::HeaderType;
+use crate::{
+    resp_body::RespBody, ExtraFlag, ExtraFlags, RespError, RespResult,
+};
 
 #[derive(Debug)]
 pub enum BodyEffect {
@@ -23,9 +24,7 @@ pub trait Effects {
     #[inline]
     /// return `Some` for overwrite resp-result StatusCode
     /// or return `None`
-    fn status_effect(&self) -> Option<StatusCode> {
-        None
-    }
+    fn status_effect(&self) -> Option<StatusCode> { None }
     #[inline]
     /// adding header map
     fn headers_effect(&self, _: &mut HeaderMap) {}
@@ -37,10 +36,12 @@ impl Effects for ExtraFlags {
         if self.flags.iter().any(|flag| flag == &ExtraFlag::EmptyBody) {
             body.clear();
             BodyEffect::Empty
-        } else {
+        }
+        else {
             BodyEffect::Continue
         }
     }
+
     #[inline]
     fn status_effect(&self) -> Option<StatusCode> {
         self.flags
@@ -48,13 +49,15 @@ impl Effects for ExtraFlags {
             .filter_map(|flag| {
                 if let ExtraFlag::SetStatus(status) = flag {
                     Some(status)
-                } else {
+                }
+                else {
                     None
                 }
             })
             .reduce(|_, r| r)
             .copied()
     }
+
     #[inline]
     fn headers_effect(&self, header_map: &mut HeaderMap) {
         self.flags
@@ -62,7 +65,8 @@ impl Effects for ExtraFlags {
             .filter_map(|flag| {
                 if let ExtraFlag::RemoveHeader(k) = flag {
                     Some(k)
-                } else {
+                }
+                else {
                     None
                 }
             })
@@ -75,16 +79,19 @@ impl Effects for ExtraFlags {
             .filter_map(|flag| {
                 if let ExtraFlag::SetHeader(k, v, ty) = flag {
                     Some((k, v.clone(), ty))
-                } else {
+                }
+                else {
                     None
                 }
             })
-            .for_each(|(k, v, ty)| match ty {
-                HeaderType::Insert => {
-                    header_map.insert(k, v);
-                }
-                HeaderType::Append => {
-                    header_map.append(k, v);
+            .for_each(|(k, v, ty)| {
+                match ty {
+                    HeaderType::Insert => {
+                        header_map.insert(k, v);
+                    }
+                    HeaderType::Append => {
+                        header_map.append(k, v);
+                    }
                 }
             })
     }
@@ -104,6 +111,7 @@ where
             RespResult::Err(_) => BodyEffect::Continue,
         }
     }
+
     #[inline]
     fn status_effect(&self) -> Option<StatusCode> {
         match self {
@@ -111,6 +119,7 @@ where
             RespResult::Err(_) => None,
         }
     }
+
     #[inline]
     fn headers_effect(&self, header_map: &mut HeaderMap) {
         if let RespResult::Success(b) = self {

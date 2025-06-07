@@ -22,18 +22,18 @@ pub enum ExtraFlag {
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 /// the action of set header
 pub enum HeaderType {
-    /// insert new header, if the header exist will push into the [`HeaderValue`] list
+    /// insert new header, if the header exist will push into the
+    /// [`HeaderValue`] list
     Insert,
-    /// append new header, if the header exist will overwrite old [`HeaderValue`]
+    /// append new header, if the header exist will overwrite old
+    /// [`HeaderValue`]
     Append,
 }
 
 impl ExtraFlag {
     /// create [`ExtraFlag::EmptyBody`] flag
     #[inline]
-    pub const fn empty_body() -> Self {
-        Self::EmptyBody
-    }
+    pub const fn empty_body() -> Self { Self::EmptyBody }
 
     #[inline]
     /// create [`ExtraFlag::SetStatus`] flag
@@ -91,22 +91,19 @@ impl ExtraFlag {
 ///
 /// ```rust
 ///
-/// use crate::{ExtraFlag,ExtraFlags};
 /// use http::StatusCode;
+/// use axum_resp_result::{ExtraFlag, ExtraFlags};
 ///
 /// let mut flags: ExtraFlags = ExtraFlag::empty_body() + ExtraFlag::status(StatusCode::BAD_REQUEST);
 ///
-///flags += ExtraFlag::append_header("bar","foo");
-///
+/// flags += ExtraFlag::append_header("bar","foo");
 /// ```
 pub struct ExtraFlags {
     pub(crate) flags: Vec<ExtraFlag>,
 }
 
 impl From<()> for ExtraFlags {
-    fn from(_: ()) -> Self {
-        ExtraFlags { flags: vec![] }
-    }
+    fn from(_: ()) -> Self { ExtraFlags { flags: vec![] } }
 }
 
 impl From<ExtraFlag> for ExtraFlags {
@@ -146,13 +143,9 @@ impl Add<ExtraFlag> for ExtraFlags {
 }
 
 impl AddAssign for ExtraFlags {
-    fn add_assign(&mut self, rhs: Self) {
-        self.flags.extend(rhs.flags);
-    }
+    fn add_assign(&mut self, rhs: Self) { self.flags.extend(rhs.flags); }
 }
 
 impl AddAssign<ExtraFlag> for ExtraFlags {
-    fn add_assign(&mut self, rhs: ExtraFlag) {
-        self.flags.push(rhs)
-    }
+    fn add_assign(&mut self, rhs: ExtraFlag) { self.flags.push(rhs) }
 }

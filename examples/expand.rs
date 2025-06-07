@@ -25,7 +25,10 @@ mod error {
         #[resp_result(err_msg = "Parse Request Path Error", err_code = 400)]
         Path(#[from] PathRejection),
         #[error("Parse Int Error: {0}")]
-        #[resp_result(err_msg = "Invalid Input Integer", err_code = "Bad Request")]
+        #[resp_result(
+            err_msg = "Invalid Input Integer",
+            err_code = "Bad Request"
+        )]
         ParseInt(#[from] ParseIntError),
     }
 }

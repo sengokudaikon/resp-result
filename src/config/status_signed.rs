@@ -48,14 +48,10 @@ pub enum SignType {
 
 impl SignType {
     /// create a [`SignType`] using `Bool`
-    pub const fn new_bool() -> Self {
-        SignType::Bool
-    }
+    pub const fn new_bool() -> Self { SignType::Bool }
 
     /// create a [`SignType`] using `BoolRevert`
-    pub const fn new_bool_rev() -> Self {
-        SignType::BoolRevert
-    }
+    pub const fn new_bool_rev() -> Self { SignType::BoolRevert }
 
     /// create a [`SignType`] using `Number`
     pub const fn new_number(ok: u8, err: u8) -> Self {
@@ -64,8 +60,11 @@ impl SignType {
             on_fail: err,
         }
     }
+
     /// create a [`SignType`] using `Str`
-    pub fn new_str(ok: impl Into<Cow<'static, str>>, err: impl Into<Cow<'static, str>>) -> Self {
+    pub fn new_str(
+        ok: impl Into<Cow<'static, str>>, err: impl Into<Cow<'static, str>>,
+    ) -> Self {
         Self::Str {
             on_ok: ok.into(),
             on_fail: err.into(),
@@ -87,7 +86,9 @@ impl From<StatusSign> for InnerStatusSign {
             SignType::Number { on_ok, on_fail } => {
                 (StatusEnum::Number(on_ok), StatusEnum::Number(on_fail))
             }
-            SignType::Str { on_ok, on_fail } => (StatusEnum::Str(on_ok), StatusEnum::Str(on_fail)),
+            SignType::Str { on_ok, on_fail } => {
+                (StatusEnum::Str(on_ok), StatusEnum::Str(on_fail))
+            }
         };
 
         Self {
