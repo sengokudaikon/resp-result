@@ -1,6 +1,4 @@
 use axum;
-#[cfg(feature = "tracing")]
-use trace as tracing;
 impl<T, E> axum::response::IntoResponse for crate::RespResult<T, E>
 where
     T: crate::resp_body::RespBody,
@@ -8,8 +6,8 @@ where
 {
     #[inline]
     #[cfg_attr(
-        feature = "tracing",
-        trace::instrument(name = "axum-into-response", skip_all)
+        feature = "trace",
+        tracing::instrument(name = "axum-into-response", skip_all)
     )]
     fn into_response(self) -> axum::response::Response {
         use crate::expect_ext::ExpectExt;

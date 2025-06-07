@@ -35,7 +35,7 @@ pub fn try_set_config<C: ConfigTrait>(cfg: &C) -> Result<(), SetRespResultConfig
     let inner = InnerConfig::from_cfg(cfg);
 
     #[cfg(feature = "trace")]
-    trace::event!(trace::Level::DEBUG, set_config = "On Going");
+    tracing::event!(tracing::Level::DEBUG, set_config = "On Going");
     RESP_RESULT_CONFIG
         .set(inner)
         .map_err(|_| SetRespResultConfigureError)
@@ -50,11 +50,11 @@ pub fn set_config<C: ConfigTrait>(cfg: &C) {
     match try_set_config(cfg) {
         Ok(_) => {
             #[cfg(feature = "trace")]
-            trace::event!(trace::Level::INFO, set_config = "Ready");
+            tracing::event!(tracing::Level::INFO, set_config = "Ready");
         }
         Err(err) => {
             #[cfg(feature = "trace")]
-            trace::event!(trace::Level::ERROR, set_config = "Error", error = %err);
+            tracing::event!(tracing::Level::ERROR, set_config = "Error", error = %err);
             panic!("{}", err);
         }
     }
@@ -63,8 +63,8 @@ pub fn set_config<C: ConfigTrait>(cfg: &C) {
 pub(crate) fn get_config() -> &'static InnerConfig {
     RESP_RESULT_CONFIG.get_or_init(|| {
         #[cfg(feature = "trace")]
-        trace::event!(
-            trace::Level::WARN,
+        tracing::event!(
+            tracing::Level::WARN,
             set_config = "None",
             action = "Using Default"
         );

@@ -1,6 +1,6 @@
 [package]
 name = "axum-resp-result-macro"
-version = "0.7.1"
+version = "0.8.0"
 edition = "2021"
 authors = ["FrozenString<frozenstringstable@gmail.com>"]
 description = "Help Struct For Axum Response"
@@ -14,7 +14,7 @@ proc-macro = true
 
 
 [features]
-extra-error=[]
+extra-error = []
 [dependencies]
 darling = "0.20"
 proc-macro2 = "1"

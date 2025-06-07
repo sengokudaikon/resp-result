@@ -1,68 +1,49 @@
-use core::{future::Future, marker::Send, pin::Pin};
-
 use axum::extract::{FromRequest, FromRequestParts, Request};
-use futures::TryFutureExt;
-
-use crate::{Nil, RespError, RespResult};
 
 use super::{FromRequestFamily, MapReject, ToInner};
+use crate::{Nil, RespError, RespResult};
 
 impl<S, T, E> FromRequest<S> for MapReject<T, E>
 where
-    S: Sync,
+    S: Sync + Send,
     E: Send + From<<T::Payload as FromRequest<S>>::Rejection> + RespError,
     T: FromRequestFamily<E>,
     T::Payload: FromRequest<S>,
 {
     type Rejection = RespResult<Nil, E>;
 
-    fn from_request<'life0, 'async_trait>(
-        req: Request,
-        state: &'life0 S,
-    ) -> ::core::pin::Pin<
-        Box<
-            dyn ::core::future::Future<Output = Result<Self, Self::Rejection>>
-                + ::core::marker::Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        Box::pin(async {
-            <T::Payload as FromRequest<S>>::from_request(req, state)
-                .await
-                .map_err(|err| RespResult::Err(E::from(err)))
-                .map(|data| Self(data.to_inner()))
-        })
+    async fn from_request(
+        req: Request, state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        match <T::Payload as FromRequest<S>>::from_request(req, state).await {
+            Ok(data) => Ok(Self(data.to_inner())),
+            Err(err) => Err(RespResult::Err(E::from(err))),
+        }
     }
 }
 
 impl<S, T, E> FromRequestParts<S> for MapReject<T, E>
 where
-    S: Sync,
-    E: Send + From<<T::Payload as FromRequestParts<S>>::Rejection> + RespError,
+    S: Sync + Send,
+    E: Send
+        + From<<T::Payload as FromRequestParts<S>>::Rejection>
+        + RespError,
     T: FromRequestFamily<E>,
     T::Payload: FromRequestParts<S>,
 {
     type Rejection = RespResult<Nil, E>;
 
-    fn from_request_parts<'life0, 'life1, 'async_trait>(
-        parts: &'life0 mut http::request::Parts,
-        state: &'life1 S,
-    ) -> Pin<Box<dyn Future<Output = Result<Self, Self::Rejection>> + Send + 'async_trait>>
-    where
-        'life0: 'async_trait,
-        'life1: 'async_trait,
-        Self: 'async_trait,
-    {
-        Box::pin(async {
-            <T::Payload as FromRequestParts<S>>::from_request_parts(parts, state)
-                .map_err(|err| RespResult::Err(E::from(err)))
-                .map_ok(|data| Self(data.to_inner()))
-                .await
-        })
+    async fn from_request_parts(
+        parts: &mut http::request::Parts, state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        match <T::Payload as FromRequestParts<S>>::from_request_parts(
+            parts, state,
+        )
+        .await
+        {
+            Ok(data) => Ok(Self(data.to_inner())),
+            Err(err) => Err(RespResult::Err(E::from(err))),
+        }
     }
 }
 mod from_request_families {
@@ -73,48 +54,36 @@ mod from_request_families {
     impl<T> ToInner for Extension<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 
     impl<T> ToInner for Form<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 
     impl<T> ToInner for Json<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 
     impl<T> ToInner for Path<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 
     impl<T> ToInner for Query<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 
     impl<T> ToInner for State<T> {
         type Inner = T;
 
-        fn to_inner(self) -> Self::Inner {
-            self.0
-        }
+        fn to_inner(self) -> Self::Inner { self.0 }
     }
 }

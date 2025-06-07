@@ -5,6 +5,7 @@ pub(crate) trait ExpectExt<T, E> {
     where
         E: Debug;
 
+    #[allow(dead_code)]
     fn with_expect_err(self, msg: &str) -> E
     where
         T: Debug;
@@ -16,25 +17,26 @@ impl<T, E> ExpectExt<T, E> for Result<T, E> {
     where
         E: Debug,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         {
             tracing_unwrap::ResultExt::expect_or_log(self, msg)
         }
-        #[cfg(not(feature = "tracing"))]
+        #[cfg(not(feature = "trace"))]
         {
             Result::expect(self, msg)
         }
     }
+
     #[inline]
     fn with_expect_err(self, msg: &str) -> E
     where
         T: Debug,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         {
             tracing_unwrap::ResultExt::expect_err_or_log(self, msg)
         }
-        #[cfg(not(feature = "tracing"))]
+        #[cfg(not(feature = "trace"))]
         {
             Result::expect_err(self, msg)
         }
@@ -46,11 +48,11 @@ impl<T> ExpectExt<T, ()> for Option<T> {
     where
         (): Debug,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         {
             tracing_unwrap::OptionExt::expect_or_log(self, msg)
         }
-        #[cfg(not(feature = "tracing"))]
+        #[cfg(not(feature = "trace"))]
         {
             Option::expect(self, msg)
         }
@@ -60,16 +62,15 @@ impl<T> ExpectExt<T, ()> for Option<T> {
     where
         T: Debug,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         {
             tracing_unwrap::OptionExt::expect_none_or_log(self, msg)
         }
-        #[cfg(not(feature = "tracing"))]
+        #[cfg(not(feature = "trace"))]
         {
-            match self {
-                this @ Some(_) => panic!("not None {} {this:?}", msg),
-                None => (),
-            };
+            if let this @ Some(_) = self {
+                panic!("not None {} {this:?}", msg)
+            }
         }
     }
 }

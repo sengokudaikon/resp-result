@@ -4,10 +4,10 @@ use echo::echo_number;
 use error::PlainError;
 use http::Request;
 
-use resp_result::{set_config, RespResult};
+use axum_resp_result::{set_config, RespResult};
 use tokio::net::TcpListener;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, TraceLayer};
-use trace::{metadata::LevelFilter, Level};
+use tracing::{metadata::LevelFilter, Level};
 use tracing_subscriber::{
     fmt::format, prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt, EnvFilter,
 };
@@ -66,8 +66,8 @@ mod error {
     use std::{borrow::Cow, num::ParseIntError};
 
     use axum::extract::rejection::PathRejection;
+    use axum_resp_result::RespError;
     use http::StatusCode;
-    use resp_result::RespError;
 
     pub(super) struct PlainError {
         pub(super) msg: String,
@@ -120,7 +120,7 @@ mod error {
 type PlainRResult<T> = RespResult<T, PlainError>;
 
 mod echo {
-    use crate::{error::PlainError, PlainRResult};
+    use crate::error::PlainError;
     use axum::extract::Path;
     use axum_resp_result::rresult;
     use axum_resp_result::MapReject;
@@ -140,8 +140,8 @@ mod echo {
 
 mod want_304 {
     use axum::extract::Query;
+    use axum_resp_result::{ExtraFlag, FlagWrap, RespResult};
     use http::{header::CONTENT_TYPE, StatusCode};
-    use resp_result::{ExtraFlag, FlagWrap, RespResult};
     use serde::Deserialize;
 
     use crate::PlainRResult;
@@ -168,7 +168,7 @@ mod want_304 {
 
 mod rtry_router {
     use axum::extract::Path;
-    use resp_result::{resp_try, rtry, RespResult};
+    use axum_resp_result::{resp_try, rtry, RespResult};
 
     use crate::{error::PlainError, PlainRResult};
 
@@ -194,7 +194,7 @@ async fn fallback(req: Request<Body>) -> PlainRResult<()> {
 mod config {
     use std::borrow::Cow;
 
-    use resp_result::{ConfigTrait, RespConfig, SerdeConfig, SignType, StatusSign};
+    use axum_resp_result::{ConfigTrait, RespConfig, SerdeConfig, SignType, StatusSign};
 
     pub(super) struct AxumConfig;
 

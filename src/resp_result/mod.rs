@@ -1,4 +1,4 @@
-#[cfg(feature = "tracing")]
+#[cfg(feature = "trace")]
 use std::any::type_name;
 use std::fmt::Debug;
 
@@ -12,8 +12,8 @@ mod try_op;
 
 pub use to_response::Nil;
 
-#[cfg(feature = "tracing")]
-use trace::{event, Level};
+#[cfg(feature = "trace")]
+use tracing::{event, Level};
 
 /// resp result for more flexible control the response body
 ///
@@ -59,7 +59,7 @@ impl<T, E> RespResult<T, E> {
     where
         F: FnOnce(T) -> N,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         event!(
             Level::TRACE,
             event = "Mapping",
@@ -80,7 +80,7 @@ impl<T, E> RespResult<T, E> {
     where
         F: FnOnce(E) -> N,
     {
-        #[cfg(feature = "tracing")]
+        #[cfg(feature = "trace")]
         event!(
             Level::TRACE,
             event = "Mapping Error",

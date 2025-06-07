@@ -2,8 +2,8 @@ use std::{
     convert::Infallible,
     ops::{ControlFlow, FromResidual, Try},
 };
-#[cfg(feature = "tracing")]
-use trace::{event, Level};
+#[cfg(feature = "trace")]
+use tracing::{event, Level};
 
 use crate::RespError;
 
@@ -22,12 +22,12 @@ impl<T, E: RespError> Try for RespResult<T, E> {
     fn branch(self) -> ControlFlow<Self::Residual, Self::Output> {
         match self {
             RespResult::Success(data) => {
-                #[cfg(feature = "tracing")]
+                #[cfg(feature = "trace")]
                 event!(Level::TRACE, control_flow = "Continue");
                 ControlFlow::Continue(data)
             }
             RespResult::Err(e) => {
-                #[cfg(feature = "tracing")]
+                #[cfg(feature = "trace")]
                 event!(Level::TRACE, control_flow = "Break");
                 ControlFlow::Break(RespResult::Err(e))
             }
@@ -110,7 +110,7 @@ mod test {
         }
     }
 
-    // test wether ? can work on Result
+    // test whether ? can work on Result
     fn _testb() -> RespResult<u32, MockA> {
         let a = Result::<_, A>::Ok(11u32)?;
         let _b = RespResult::<_, MockA>::ok(a)?;
